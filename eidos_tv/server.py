@@ -166,6 +166,37 @@ def load_provider():
 
 def board_payload(channel: dict | None = None) -> dict:
     ch = channel or resolve_channel(station=STATION_ID)
+    # Guide is config chrome (CH 01 doctrine) — not a station provider
+    kind = (ch.get("kind") or "station").lower()
+    if kind == "guide" or (ch.get("station") or "").lower() == "guide":
+        return {
+            "live": True,
+            "source": "guide",
+            "bug": "GUIDE",
+            "live_label": "GUIDE",
+            "kind": "guide",
+            "channel": ch,
+            "channels": load_channels(),
+            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "markets": {"title": "TV GUIDE", "subtitle": "SELECT A CHANNEL", "chart": "bronze_bars_quality_line", "series": [], "quotes": []},
+            "stories": [],
+            "special": {
+                "kicker": "GUIDE",
+                "headline": ch.get("program") or "TV Guide",
+                "bullets": [c.get("desc") or c.get("name") for c in (load_channels().get("channels") or [])[:8]],
+                "href": "/",
+            },
+            "insights": {"insights": [], "count": 0},
+            "week": {"days_list": []},
+            "ticker": ["TV GUIDE", "CH NUMBERS ARE CONFIG (num FIELD)", "TUNE WITH CH+/CH− OR GUIDE"],
+            "station": {
+                "id": "guide",
+                "brand": "GUIDE",
+                "brandSub": "CH 01 · CHANNEL CHANGER",
+                "publicBase": f"http://{HOST}:{PORT}",
+            },
+        }
+
     station_id = ch.get("station") or STATION_ID
     preset = ch.get("preset") or "full"
     cache_key = f"{station_id}:{preset}:{ch.get('num')}"
