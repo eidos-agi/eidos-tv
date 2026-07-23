@@ -3,33 +3,47 @@
   "channels": [
     {
       "num": 1,
-      "station": "tallytv",
-      "name": "TALLYTV",
-      "callsign": "TAL-1",
-      "program": "Financial Channel",
-      "desc": "CH 01 — Amex spend, coverage, kill-list, campaign, renewals. Row-safe CFO wall.",
+      "kind": "guide",
+      "station": "guide",
+      "name": "GUIDE",
+      "callsign": "GUIDE",
+      "program": "TV Guide",
+      "desc": "CH 01 — the Guide itself. Channel numbers are config (num field), not list position.",
       "preset": "full"
     },
     {
       "num": 2,
-      "station": "demo",
-      "name": "EIDOS DEMO",
-      "callsign": "EID-2",
-      "program": "Progress & Quality",
-      "desc": "Rising progress columns with quality line. Wall-cast default.",
+      "kind": "station",
+      "station": "tallytv",
+      "name": "TALLYTV",
+      "callsign": "TAL-2",
+      "program": "Financial Channel",
+      "desc": "CH 02 — Amex spend, coverage, kill-list, campaign, renewals. Row-safe CFO wall.",
       "preset": "full"
     },
     {
       "num": 4,
+      "kind": "station",
+      "station": "demo",
+      "name": "EIDOS DEMO",
+      "callsign": "EID-4",
+      "program": "Progress & Quality",
+      "desc": "Rising progress columns with quality line.",
+      "preset": "full"
+    },
+    {
+      "num": 5,
+      "kind": "station",
       "station": "demo",
       "name": "EIDOS INSIGHTS",
-      "callsign": "EID-4",
+      "callsign": "EID-5",
       "program": "Data Insights",
       "desc": "Insight-forward board — starts on DATA INSIGHTS segment.",
       "preset": "insights"
     },
     {
       "num": 7,
+      "kind": "station",
       "station": "demo",
       "name": "EIDOS WEEK",
       "callsign": "EID-7",

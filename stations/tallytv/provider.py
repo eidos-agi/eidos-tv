@@ -579,7 +579,7 @@ def _build_ticker(
 ) -> list[str]:
     over = "OVER" if ai_dev > AI_DEV_CEILING else "OK"
     return [
-        "TALLYTV · CH 01 · REEVES FINANCIAL",
+        "TALLYTV · CH 02 · REEVES FINANCIAL",
         f"AMEX LEDGER ${amex_ledger:,.0f} (FULL-LEDGER)",
         f"AI/DEV MTD ${ai_dev:,.0f} / CAP ${AI_DEV_CEILING:,.0f} {over}",
         f"COVERAGE {coverage * 100:.0f}% VISIBLE RAILS",

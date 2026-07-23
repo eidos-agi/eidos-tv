@@ -720,12 +720,22 @@ let guideFocus = 0;
 let bannerTimer = null;
 
 function channelList() {
-  return (channelsCat && channelsCat.channels) || (board && board.channels && board.channels.channels) || [];
+  // Always sort by explicit config `num` — never rely on array position for channel identity.
+  const raw = (channelsCat && channelsCat.channels) || (board && board.channels && board.channels.channels) || [];
+  return raw.slice().sort((a, b) => (Number(a.num) || 0) - (Number(b.num) || 0));
+}
+
+function isGuideChannel(ch) {
+  if (!ch) return false;
+  const kind = (ch.kind || "").toLowerCase();
+  const st = (ch.station || "").toLowerCase();
+  const name = (ch.name || "").toLowerCase();
+  return kind === "guide" || st === "guide" || name === "guide";
 }
 
 function currentChannel() {
   const list = channelList();
-  if (!list.length) return { num: 2, name: "EIDOS", callsign: "EID-2", program: "Live", station: "demo", preset: "full" };
+  if (!list.length) return { num: 2, name: "EIDOS", callsign: "EID-2", program: "Live", station: "demo", preset: "full", kind: "station" };
   return list[Math.max(0, Math.min(channelIndex, list.length - 1))];
 }
 
@@ -791,12 +801,21 @@ async function tuneToIndex(idx) {
   channelIndex = (idx + list.length) % list.length;
   const ch = currentChannel();
   showChannelBanner();
-  // reload board for channel
+  // CH 01 doctrine: the Guide itself — open overlay, do not invent a parallel station scheme
+  if (isGuideChannel(ch)) {
+    setGuide(true);
+    return;
+  }
+  // reload board for station channel (resolve by explicit num)
   try {
     const q = new URLSearchParams({ ch: String(ch.num), station: ch.station || "" });
     const r = await fetch("/api/board?" + q.toString(), { cache: "no-store" });
     board = await r.json();
     if (board.channels) channelsCat = board.channels;
+    // re-sync index after reload (list sorted by num)
+    const list2 = channelList();
+    const found = list2.findIndex(c => Number(c.num) === Number(ch.num) && c.station === ch.station);
+    if (found >= 0) channelIndex = found;
     // preset segment
     const pref = board.preferred_segment;
     if (pref) {

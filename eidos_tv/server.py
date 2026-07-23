@@ -69,8 +69,9 @@ def load_channels() -> dict:
 
 
 def resolve_channel(ch: str | int | None = None, station: str | None = None) -> dict:
+    """Resolve by explicit ``num`` field (Daniel-reassignable config), never list position."""
     cat = load_channels()
-    chans = cat.get("channels") or []
+    chans = sorted(cat.get("channels") or [], key=lambda c: int(c.get("num") or 0))
     if ch is not None and str(ch).strip() != "":
         try:
             num = int(ch)
@@ -84,9 +85,19 @@ def resolve_channel(ch: str | int | None = None, station: str | None = None) -> 
                 return c
     if station:
         for c in chans:
+            if c.get("station") == station and (c.get("kind") or "station") != "guide":
+                return c
+        for c in chans:
             if c.get("station") == station:
                 return c
-    return chans[0] if chans else {"num": 2, "station": STATION_ID, "name": "EIDOS", "preset": "full"}
+    # Prefer configured content station (not guide) matching STATION_ID, else first non-guide
+    for c in chans:
+        if c.get("station") == STATION_ID and (c.get("kind") or "station") != "guide":
+            return c
+    for c in chans:
+        if (c.get("kind") or "station") != "guide":
+            return c
+    return chans[0] if chans else {"num": 2, "station": STATION_ID, "name": "EIDOS", "preset": "full", "kind": "station"}
 
 
 def station_dir_for(station_id: str) -> Path:
