@@ -1152,6 +1152,17 @@ function insightsApiUrl() {
 async function load() {
   const r = await fetch(apiUrl(), {cache:"no-store"});
   board = await r.json();
+  if (board.channels) channelsCat = board.channels;
+  if (board.channel) {
+    const list = channelList();
+    const i = list.findIndex(c => Number(c.num) === Number(board.channel.num));
+    if (i >= 0) channelIndex = i;
+  }
+  if (board.preferred_segment && !DEEP_INSIGHT) {
+    const si = SEGMENTS.indexOf(board.preferred_segment);
+    if (si >= 0) step = si;
+  }
+
   // deep link: land on DATA INSIGHTS, pin id, pause rotation
   if (DEEP_INSIGHT) {
     const list = ((board || {}).insights || {}).insights || [];
@@ -1212,7 +1223,8 @@ function paintQr() {
 paintQr();
 
 document.getElementById("pie").onclick = () => setPaused(!paused);
-load();
+wireRemote();
+load().then(() => showChannelBanner());
 setInterval(load, 10*60*1000); // 10-min bronze/quality sample
 setInterval(() => {
   if (!board) return;
