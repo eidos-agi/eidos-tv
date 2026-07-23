@@ -1,6 +1,15 @@
 {
-  "guide_title": "EIDOS TV GUIDE",
+  "guide_title": "REEVES TV GUIDE",
   "channels": [
+    {
+      "num": 1,
+      "station": "tallytv",
+      "name": "TALLYTV",
+      "callsign": "TAL-1",
+      "program": "Financial Channel",
+      "desc": "CH 01 — Amex spend, coverage, kill-list, campaign, renewals. Row-safe CFO wall.",
+      "preset": "full"
+    },
     {
       "num": 2,
       "station": "demo",
@@ -16,7 +25,7 @@
       "name": "EIDOS INSIGHTS",
       "callsign": "EID-4",
       "program": "Data Insights",
-      "desc": "Insight-forward board \u2014 starts on DATA INSIGHTS segment.",
+      "desc": "Insight-forward board — starts on DATA INSIGHTS segment.",
       "preset": "insights"
     },
     {
