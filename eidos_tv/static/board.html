@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Greenmark TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* Theme tokens */
+  html[data-theme="dark"] {
+    --ink: #0c1410;
+    --panel: #121c16;
+    --panel2: #18241c;
+    --line: #2a3d30;
+    --line2: #3d5645;
+    --mute: #8fa896;
+    --text: #e8f0ea;
+    --green: #3dcc6e;
+    --green-dim: #1f7a42;
+    --green-deep: #0f3d22;
+    --amber: #e8a838;
+    --warn: #e85d4c;
+    --white: #f4faf5;
+    --bug-fg: #04140a;
+    --chg-fg: #04140a;
+    --head-bg: #0e1812;
+    --strip-bg: linear-gradient(90deg, #0a1810, #102018 40%, #0a1810);
+    --page-bg:
+      radial-gradient(1200px 600px at 10% -10%, #163524 0%, transparent 55%),
+      radial-gradient(900px 500px at 100% 0%, #1a2e20 0%, transparent 50%),
+      linear-gradient(180deg, #0a120e 0%, #0c1410 40%, #0a100c 100%);
+    --chart-grid: #2a3d30;
+    --hover-panel: #18241c;
+    --sp-bg: linear-gradient(135deg, #15251b 0%, #121c16 50%, #1a2010 100%);
+    --tick-bg: #080f0b;
+    --shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  html[data-theme="light"] {
+    --ink: #f3f7f4;
+    --panel: #ffffff;
+    --panel2: #f0f5f1;
+    --line: #c5d6ca;
+    --line2: #9fb5a6;
+    --mute: #5a7263;
+    --text: #142018;
+    --green: #1a8f45;
+    --green-dim: #147038;
+    --green-deep: #0d4a24;
+    --amber: #c47d10;
+    --warn: #c43c2e;
+    --white: #0c1410;
+    --bug-fg: #f4faf5;
+    --chg-fg: #f4faf5;
+    --head-bg: #e8f0ea;
+    --strip-bg: linear-gradient(90deg, #e4efe7, #f0f7f2 40%, #e4efe7);
+    --page-bg:
+      radial-gradient(1000px 500px at 0% 0%, #d8edd8 0%, transparent 50%),
+      radial-gradient(800px 400px at 100% 0%, #e8f2e0 0%, transparent 45%),
+      linear-gradient(180deg, #eef5f0 0%, #f3f7f4 45%, #e8efe9 100%);
+    --chart-grid: #d0dfd4;
+    --hover-panel: #ffffff;
+    --sp-bg: linear-gradient(135deg, #e8f5ec 0%, #ffffff 55%, #f5f8e8 100%);
+    --tick-bg: #e0ebe3;
+    --shadow: 0 6px 20px rgba(20,40,28,0.08);
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    background: var(--ink); color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+  }
+  .tvb {
+    height: 100vh; overflow: hidden;
+    display: grid;
+    grid-template-rows: auto auto 1fr auto auto;
+    background: var(--page-bg);
+  }
+
+  .tvb-strip {
+    display: flex; gap: 2.2vw; overflow: hidden;
+    padding: 0.85vh 1.2vw;
+    background: var(--strip-bg);
+    border-bottom: 1px solid var(--line);
+    border-top: 3px solid var(--green);
+  }
+  .tvb-strip span {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600; font-size: 1.65vh;
+    letter-spacing: 0.04em; white-space: nowrap; color: var(--text);
+  }
+  .tvb-strip b { color: var(--green); font-weight: 700; }
+  .tvb-strip .sep { color: var(--line2); margin: 0 0.4vw; }
+
+  .tvb-head {
+    display: flex; align-items: stretch;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line2);
+    box-shadow: var(--shadow);
+  }
+  .tvb-bug {
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 0.15vh;
+    background: linear-gradient(160deg, var(--green) 0%, var(--green-dim) 100%);
+    color: var(--bug-fg);
+    padding: 0.9vh 1.4vw;
+    min-width: 11vw;
+  }
+  .tvb-bug .brand {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 2.6vh;
+    letter-spacing: 0.12em; line-height: 1;
+  }
+  .tvb-bug .sub {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.15vh; font-weight: 600;
+    letter-spacing: 0.18em; opacity: 0.9;
+  }
+  .tvb-tabs { flex: 1; display: flex; background: var(--head-bg); }
+  .tvb-tab {
+    display: flex; align-items: center;
+    padding: 0 1.5vw;
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 2.05vh;
+    letter-spacing: 0.16em;
+    color: var(--mute);
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--line);
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  .tvb-tab:hover { color: var(--text); filter: brightness(1.05); }
+  .tvb-tab.active {
+    color: var(--text);
+    background: var(--panel2);
+    box-shadow: inset 0 -3px 0 0 var(--green);
+  }
+  .tvb-pie {
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 1.1vw;
+    background: var(--head-bg);
+    border: none; border-left: 1px solid var(--line);
+    cursor: pointer; min-width: 48px;
+  }
+  .tvb-pie svg { width: 2.8vh; height: 2.8vh; transform: rotate(-90deg); }
+  .tvb-pie circle.track { fill: none; stroke: var(--line2); }
+  .tvb-pie circle.left {
+    fill: none; stroke: var(--amber);
+    animation: pie linear forwards; animation-duration: inherit;
+  }
+  @keyframes pie { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 31.416; } }
+  .tvb-live {
+    display: flex; align-items: center; gap: 0.65vw;
+    padding: 0 1.3vw;
+    background: var(--head-bg);
+    border-left: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.5vh; font-weight: 600;
+    letter-spacing: 0.08em; color: var(--mute);
+  }
+  .tvb-live .dot {
+    width: 1.1vh; height: 1.1vh; border-radius: 50%;
+    background: var(--amber);
+    box-shadow: 0 0 10px var(--amber);
+    animation: blink 1.6s infinite;
+  }
+  @keyframes blink { 0%,100% { opacity: 1 } 50% { opacity: 0.3 } }
+
+  .theme-switch {
+    display: flex; align-items: center; gap: 0.4vw;
+    padding: 0 0.9vw;
+    background: var(--head-bg);
+    border-left: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.35vh; font-weight: 600;
+    letter-spacing: 0.1em;
+  }
+  .theme-switch a {
+    color: var(--mute); text-decoration: none;
+    padding: 0.35vh 0.55vw; border-radius: 2px;
+    border: 1px solid transparent;
+  }
+  .theme-switch a:hover { color: var(--text); }
+  .theme-switch a.on {
+    color: var(--green);
+    border-color: var(--line2);
+    background: var(--panel);
+  }
+
+  .tvb-center {
+    min-height: 0; padding: 2vh 1.8vw 1.6vh;
+    display: flex; flex-direction: column;
+  }
+  .tvb-wipe {
+    position: relative; flex: 1; min-height: 0;
+    display: flex; flex-direction: column;
+    animation: wipe 0.5s cubic-bezier(0.22, 0.8, 0.28, 1) both;
+  }
+  @keyframes wipe {
+    from { opacity: 0; transform: translateY(1.2vh); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tvb-mk {
+    display: grid; grid-template-columns: 2.35fr 1fr;
+    gap: 1.5vw; flex: 1; min-height: 0;
+  }
+  .tvb-chartwrap {
+    display: flex; flex-direction: column; min-height: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 1.4vh 1.2vw 1vh;
+  }
+  .tvb-charthead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1vw; margin-bottom: 1vh;
+    padding-bottom: 0.8vh;
+    border-bottom: 1px solid var(--line);
+  }
+  .tvb-charthead .t {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 3.1vh;
+    letter-spacing: 0.04em;
+  }
+  .tvb-charthead .s {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.45vh; color: var(--mute); letter-spacing: 0.12em;
+  }
+  .tvb-chart { flex: 1; min-height: 0; }
+  .tvb-chart svg { display: block; width: 100%; height: 100%; }
+  .tvb-qcol { display: flex; flex-direction: column; gap: 1vh; }
+  .tvb-q {
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--line2);
+    border-radius: 4px;
+    padding: 1.2vh 1vw;
+    flex: 1;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .tvb-q.active {
+    border-left-color: var(--green);
+    background: var(--panel);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--green) 25%, transparent);
+  }
+  .tvb-q .sym {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600; font-size: 1.45vh;
+    letter-spacing: 0.12em; color: var(--mute); margin-bottom: 0.4vh;
+  }
+  .tvb-q .row { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6vw; }
+  .tvb-q .px {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 3.4vh; letter-spacing: 0.02em;
+  }
+  .tvb-q .chg {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700; font-size: 1.55vh;
+    padding: 0.35vh 0.55vw;
+    color: var(--chg-fg);
+    background: var(--green);
+    border-radius: 2px;
+  }
+
+  .tvb-stories {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.4vh;
+  }
+  .tvb-story {
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1.3vw; align-items: center;
+    text-decoration: none; color: inherit;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.4vh 1.3vw;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .tvb-story:hover { border-color: var(--green-dim); background: var(--panel2); }
+  .tvb-story .n {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 4.2vh;
+    color: var(--green); line-height: 1;
+    min-width: 1.4ch;
+  }
+  .tvb-story .tag {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600; font-size: 1.4vh;
+    letter-spacing: 0.16em; color: var(--amber);
+  }
+  .tvb-story p {
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600; font-size: 2.55vh;
+    line-height: 1.28; margin: 0.35vh 0 0;
+  }
+
+  .tvb-sp {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 1.8vh;
+    text-decoration: none; color: inherit;
+    background: var(--sp-bg);
+    border: 1px solid var(--line2);
+    border-radius: 6px;
+    padding: 3vh 2.2vw;
+  }
+  .tvb-sp .k {
+    align-self: flex-start;
+    background: var(--amber);
+    color: #1a1204;
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700; font-size: 1.55vh;
+    letter-spacing: 0.14em;
+    padding: 0.55vh 0.9vw;
+    border-radius: 2px;
+  }
+  .tvb-sp h2 {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 5vh;
+    line-height: 1.08; margin: 0; max-width: 28ch;
+    letter-spacing: 0.02em;
+  }
+  .tvb-sp .b {
+    border-left: 4px solid var(--green);
+    padding-left: 1.1vw;
+    font-size: 2.15vh; line-height: 1.45;
+    color: var(--mute); max-width: 68ch; margin: 0;
+  }
+  html[data-theme="light"] .tvb-sp .b { color: #3a4f42; }
+
+  .tvb-cal {
+    flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 0.7vh;
+  }
+  .tvb-cal-row {
+    display: grid; grid-template-columns: 11vw 1fr auto;
+    align-items: center; gap: 1.3vw;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.35vh 1.2vw;
+  }
+  .tvb-cal-row .d {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700; font-size: 1.7vh;
+    color: var(--amber); letter-spacing: 0.1em;
+  }
+  .tvb-cal-row .t {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 2.2vh;
+    letter-spacing: 0.02em;
+  }
+  .tvb-cal-row .s {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.45vh; letter-spacing: 0.1em; color: var(--mute);
+  }
+
+  .tvb-lower {
+    display: flex; align-items: stretch;
+    background: var(--panel2);
+    border-top: 1px solid var(--line2);
+    text-decoration: none; color: inherit;
+  }
+  .tvb-lower .k {
+    background: var(--green-deep);
+    color: var(--green);
+    border-right: 1px solid var(--green-dim);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700; font-size: 1.55vh;
+    letter-spacing: 0.14em;
+    padding: 1.1vh 1.2vw;
+    display: flex; align-items: center; white-space: nowrap;
+  }
+  html[data-theme="light"] .tvb-lower .k {
+    background: var(--green);
+    color: #f4faf5;
+    border-right-color: var(--green-dim);
+  }
+  .tvb-lower .h {
+    display: flex; align-items: center;
+    padding: 0.7vh 1.3vw;
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 2.5vh;
+    letter-spacing: 0.03em;
+  }
+  .tvb-lower:hover .h { color: var(--green); }
+
+  .tvb-tick {
+    background: var(--tick-bg);
+    border-top: 1px solid var(--line);
+    overflow: hidden; white-space: nowrap;
+  }
+  .tvb-tick-inner {
+    display: inline-flex; gap: 2.8vw;
+    padding: 0.85vh 0;
+    animation: crawl 55s linear infinite;
+  }
+  .tvb-tick-inner span {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 600; font-size: 1.55vh;
+    letter-spacing: 0.06em; color: var(--mute);
+  }
+  .tvb-tick-inner i {
+    color: var(--green); font-style: normal; margin-right: 0.5vw;
+  }
+  @keyframes crawl {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+
+  .tvb-ins {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    gap: 1.4vh;
+    background: var(--sp-bg);
+    border: 1px solid var(--line2);
+    border-radius: 8px;
+    padding: 2.4vh 2vw;
+    min-height: 0;
+  }
+  .tvb-ins .row1 { display: flex; align-items: center; gap: 1vw; flex-wrap: wrap; }
+  .tvb-ins .k {
+    background: var(--green);
+    color: var(--chg-fg);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 700; font-size: 1.45vh;
+    letter-spacing: 0.14em;
+    padding: 0.45vh 0.75vw;
+    border-radius: 2px;
+  }
+  .tvb-ins .id {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4vh; letter-spacing: 0.08em;
+    color: var(--mute);
+  }
+  .tvb-ins .score {
+    margin-left: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.4vh; color: var(--amber); font-weight: 700;
+  }
+  .tvb-ins h2 {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 4.2vh;
+    line-height: 1.1; margin: 0; max-width: 34ch;
+  }
+  .tvb-ins .body {
+    font-size: 2.15vh; line-height: 1.45;
+    color: var(--text); max-width: 72ch; margin: 0;
+    opacity: 0.92;
+  }
+  .tvb-ins .why {
+    border-left: 4px solid var(--amber);
+    padding-left: 1vw;
+    font-size: 1.85vh; line-height: 1.4;
+    color: var(--mute); max-width: 70ch; margin: 0;
+  }
+  .tvb-ins .nav {
+    display: flex; gap: 1vw; align-items: center;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.35vh; color: var(--mute); letter-spacing: 0.1em;
+  }
+
+  /* QR — always-on corner for cast / walk-up scan */
+  .tvb-qr {
+    position: fixed;
+    right: 1.1vw;
+    bottom: 7.5vh; /* above ticker + lower third */
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5vh;
+    padding: 0.9vh 0.8vw 0.7vh;
+    background: var(--panel);
+    border: 1px solid var(--line2);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+  }
+  .tvb-qr img, .tvb-qr canvas {
+    width: 9.5vh;
+    height: 9.5vh;
+    display: block;
+    border-radius: 3px;
+    background: #fff;
+  }
+  .tvb-qr .cap {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.15vh;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: var(--mute);
+    text-align: center;
+    line-height: 1.25;
+  }
+  .tvb-qr .cap b { color: var(--green); display: block; }
+  .tvb-qr a { text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 0.5vh; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tvb-wipe, .tvb-pie circle.left, .tvb-live .dot, .tvb-tick-inner { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="tvb" id="app">
+  <div class="tvb-strip" id="strip"></div>
+  <header class="tvb-head">
+    <div class="tvb-bug">
+      <span class="brand" id="brandName">EIDOS</span>
+      <span class="sub" id="brandSub">STATION · TV</span>
+    </div>
+    <nav class="tvb-tabs" id="tabs" aria-label="Segments"></nav>
+    <button type="button" class="tvb-pie" id="pie" aria-label="Pause rotation"></button>
+    <nav class="theme-switch" aria-label="Theme">
+      <a id="linkDark" href="../dark/">DARK</a>
+      <a id="linkLight" href="../light/">LIGHT</a>
+    </nav>
+    <span class="tvb-live"><span class="dot"></span><span id="live">LIVE</span></span>
+  </header>
+  <main class="tvb-center"><div class="tvb-wipe" id="center"></div></main>
+  <a class="tvb-lower" id="lower" href="#"><span class="k" id="lowerK">SPECIAL</span><span class="h" id="lowerH"></span></a>
+  <div class="tvb-tick" aria-hidden="true"><div class="tvb-tick-inner" id="tick"></div></div>
+  <div class="tvb-qr" id="qrBox">
+    <a id="qrLink" href="#" target="_blank" rel="noopener" title="Open Greenmark TV on your phone">
+      <img id="qrImg" alt="QR code to open Greenmark TV" width="180" height="180" />
+      <span class="cap" id="qrCap"><b>SCAN</b>OPEN ON PHONE</span>
+    </a>
+  </div>
+</div>
+<script>
+
+window.EIDOS_TV = Object.assign({
+  publicBase: location.origin,
+  brand: "EIDOS",
+  brandSub: "STATION · TV",
+  livePrefix: "LIVE"
+}, window.EIDOS_TV || {});
+
+const ROTATE_MS = 12000;
+const SEGMENTS = ["MARKETS","DATA INSIGHTS","TOP STORIES","SPECIAL","THIS WEEK"];
+
+/** Resolve theme + optional insight id from path. */
+function resolveTheme() {
+  const p = (location.pathname || "").toLowerCase();
+  if (p.includes("/light")) return "light";
+  return "dark";
+}
+/** /tv/dark/i/ins_xxx or /dark/i/ins_xxx */
+function resolveInsightId() {
+  const m = (location.pathname || "").match(/\/i\/(ins_[a-f0-9]+)/i);
+  return m ? m[1] : null;
+}
+const THEME = resolveTheme();
+const DEEP_INSIGHT = resolveInsightId();
+document.documentElement.setAttribute("data-theme", THEME);
+document.title = "Greenmark TV · " + THEME.toUpperCase() + (DEEP_INSIGHT ? " · " + DEEP_INSIGHT : "");
+let insightIdx = 0;
+let pinnedInsightId = DEEP_INSIGHT;
+
+// Theme switch links work both direct (:8799/dark/) and behind door (/tv/dark/)
+(function themeLinks() {
+  const base = location.pathname.replace(/\/?(dark|light)\/?$/i, "") || "";
+  const prefix = base.endsWith("/") ? base : base + "/";
+  // Behind handle_path, path is /dark/ or /light/ → sibling is ../light/ works
+  // Also support absolute-style under /tv/
+  const onDoor = location.pathname.includes("/tv/");
+  const insSuffix = pinnedInsightId ? ("i/" + pinnedInsightId + "/") : "";
+  const darkHref = "/" + "dark/" + insSuffix;
+  const lightHref = "/" + "light/" + insSuffix;
+  const d = document.getElementById("linkDark");
+  const l = document.getElementById("linkLight");
+  d.href = darkHref; l.href = lightHref;
+  d.classList.toggle("on", THEME === "dark");
+  l.classList.toggle("on", THEME === "light");
+})();
+
+const GREEN = getComputedStyle(document.documentElement).getPropertyValue("--green").trim() || "#3dcc6e";
+const AMBER = getComputedStyle(document.documentElement).getPropertyValue("--amber").trim() || "#e8a838";
+const CHART_GRID = getComputedStyle(document.documentElement).getPropertyValue("--chart-grid").trim() || "#2a3d30";
+const HOVER_PANEL = getComputedStyle(document.documentElement).getPropertyValue("--hover-panel").trim() || "#18241c";
+const TEXT = getComputedStyle(document.documentElement).getPropertyValue("--text").trim() || "#e8f0ea";
+const MUTE = getComputedStyle(document.documentElement).getPropertyValue("--mute").trim() || "#8fa896";
+const INK = getComputedStyle(document.documentElement).getPropertyValue("--ink").trim() || "#0c1410";
+const CHG_FG = getComputedStyle(document.documentElement).getPropertyValue("--chg-fg").trim() || "#04140a";
+
+let board = null, step = 0, paused = false, rotTimer = null, hov = null;
+
+function q(n){ return Math.round(n*10)/10; }
+
+function progressChart(pts) {
+  if (!pts || pts.length < 1) return "<div style='color:var(--mute);padding:2vh'>No progress series yet</div>";
+  const W=960, H=420, padL=54, padR=54, padT=28, padB=42;
+  const n=pts.length;
+  const bronzes = pts.map(p => Number(p.bronze != null ? p.bronze : p.v) || 0);
+  const quals = pts.map(p => Number(p.quality) || 0);
+  const maxB = Math.max(...bronzes, 1);
+  const minQ = Math.min(...quals.filter(q => q > 0), 0);
+  const maxQ = Math.max(...quals, 5);
+  const qLo = Math.max(0, Math.min(minQ, 2) - 0.2);
+  const qHi = Math.max(maxQ, 6) + 0.2;
+  const qSpan = Math.max(0.2, qHi - qLo);
+  const slot = (W - padL - padR) / Math.max(1, n);
+  const barW = Math.max(4, Math.min(28, slot * 0.62));
+  const xAt = i => padL + slot * i + slot / 2;
+  const yB = v => padT + (1 - v / maxB) * (H - padT - padB);
+  const yQ = v => padT + (1 - (v - qLo) / qSpan) * (H - padT - padB);
+  const gridYs = [0.25, 0.5, 0.75].map(f => padT + f * (H - padT - padB));
+  // bars
+  let bars = "";
+  for (let i = 0; i < n; i++) {
+    const x = xAt(i) - barW / 2;
+    const y = yB(bronzes[i]);
+    const h = Math.max(1, H - padB - y);
+    const active = (hov === i);
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}"
+      rx="2" fill="${GREEN}" fill-opacity="${active ? 0.95 : 0.72}" stroke="${active ? TEXT : "none"}" stroke-width="1.2"/>`;
+  }
+  // quality line
+  const linePts = quals.map((q, i) => `${i ? "L" : "M"}${xAt(i).toFixed(1)},${yQ(q).toFixed(1)}`).join("");
+  let dots = "";
+  for (let i = 0; i < n; i++) {
+    if (!(quals[i] > 0)) continue;
+    dots += `<circle cx="${xAt(i).toFixed(1)}" cy="${yQ(quals[i]).toFixed(1)}" r="${hov===i?5:3.2}" fill="${AMBER}" stroke="${INK}" stroke-width="1"/>`;
+  }
+  // hover tooltip
+  let hover = "";
+  if (hov !== null && pts[hov]) {
+    const px = xAt(hov);
+    const b = bronzes[hov], q = quals[hov];
+    const bx = Math.min(W - padR - 210, Math.max(4, px - 105));
+    hover = `<line x1="${px}" x2="${px}" y1="${padT}" y2="${H-padB}" stroke="${TEXT}" stroke-width="1" stroke-dasharray="3 4" opacity="0.5"/>
+      <rect x="${bx}" y="4" width="210" height="36" rx="3" fill="${HOVER_PANEL}" stroke="${GREEN}" stroke-width="1"/>
+      <text x="${bx+105}" y="18" text-anchor="middle" fill="${TEXT}" font-size="13" font-weight="600" font-family="IBM Plex Mono,monospace">${pts[hov].label || ""}</text>
+      <text x="${bx+105}" y="33" text-anchor="middle" fill="${TEXT}" font-size="13" font-weight="700" font-family="IBM Plex Mono,monospace">BRONZE ${b.toFixed(0)} · Q ${q.toFixed(2)}</text>`;
+  }
+  // axes labels
+  const yTicks = [0, 0.5, 1].map(f => {
+    const v = maxB * (1 - f);
+    const y = padT + f * (H - padT - padB);
+    return `<text x="${padL-8}" y="${y+4}" text-anchor="end" fill="${MUTE}" font-size="12" font-family="IBM Plex Mono,monospace">${Math.round(v)}</text>`;
+  }).join("");
+  const qTicks = [0, 0.5, 1].map(f => {
+    const v = qLo + (1 - f) * qSpan;
+    const y = padT + f * (H - padT - padB);
+    return `<text x="${W-padR+8}" y="${y+4}" text-anchor="start" fill="${AMBER}" font-size="12" font-family="IBM Plex Mono,monospace">${v.toFixed(1)}</text>`;
+  }).join("");
+  // x labels sparse
+  let xLabs = "";
+  const step = Math.max(1, Math.floor(n / 6));
+  for (let i = 0; i < n; i += step) {
+    xLabs += `<text x="${xAt(i).toFixed(1)}" y="${H-12}" text-anchor="middle" fill="${MUTE}" font-size="11" font-family="IBM Plex Mono,monospace">${(pts[i].label||"").slice(0,10)}</text>`;
+  }
+  // legend
+  const legend = `<rect x="${padL}" y="6" width="10" height="10" rx="1" fill="${GREEN}" opacity="0.8"/>
+    <text x="${padL+14}" y="15" fill="${MUTE}" font-size="12" font-family="IBM Plex Mono,monospace">BRONZE</text>
+    <line x1="${padL+78}" y1="11" x2="${padL+98}" y2="11" stroke="${AMBER}" stroke-width="2.5"/>
+    <circle cx="${padL+88}" cy="11" r="2.5" fill="${AMBER}"/>
+    <text x="${padL+104}" y="15" fill="${MUTE}" font-size="12" font-family="IBM Plex Mono,monospace">QUALITY</text>`;
+
+  return `<svg id="chartSvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img"
+    aria-label="Bronze progress columns with quality line — drag to read"
+    style="touch-action:none;cursor:crosshair">
+    ${gridYs.map(gy => `<line x1="${padL}" x2="${W-padR}" y1="${gy}" y2="${gy}" stroke="${CHART_GRID}" stroke-width="1"/>`).join("")}
+    ${bars}
+    <path d="${linePts}" fill="none" stroke="${AMBER}" stroke-width="2.8" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    ${yTicks}${qTicks}${xLabs}${legend}${hover}
+  </svg>`;
+}
+
+function bindChart(pts) {
+function bindChart(pts) {
+  const svg = document.getElementById("chartSvg");
+  if (!svg || !pts || !pts.length) return;
+  const W=960, padL=54, padR=54, n=pts.length;
+  const idxFromEvent = (e) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const fx = (e.clientX - r.left) / Math.max(1, r.width);
+    const px = fx * W;
+    const slot = (W - padL - padR) / Math.max(1, n);
+    const i = Math.floor((px - padL) / slot);
+    return Math.min(n-1, Math.max(0, i));
+  };
+  const paint = () => { renderCenter(); bindChart(pts); };
+  svg.onpointerdown = (e) => { setPaused(true); hov = idxFromEvent(e); paint(); };
+  svg.onpointermove = (e) => {
+    if (e.buttons || e.pointerType === "mouse") {
+      hov = idxFromEvent(e);
+      if (e.buttons) setPaused(true);
+      paint();
+    }
+  };
+  svg.onpointerleave = () => { hov = null; paint(); };
+}
+
+function setPaused(p) {
+  paused = p;
+  if (rotTimer) { clearInterval(rotTimer); rotTimer = null; }
+  if (!paused) rotTimer = setInterval(() => {
+    const seg = SEGMENTS[step % SEGMENTS.length];
+    const list = ((board || {}).insights || {}).insights || [];
+    // When rotating off DATA INSIGHTS, advance which insight is next
+    if (seg === "DATA INSIGHTS" && list.length && !DEEP_INSIGHT) {
+      insightIdx = (insightIdx + 1) % list.length;
+    }
+    step++; hov=null;
+    // clear pin so QR follows board unless deep-linked
+    if (!DEEP_INSIGHT && SEGMENTS[(step) % SEGMENTS.length] !== "DATA INSIGHTS") {
+      pinnedInsightId = null;
+      (function applyBrand(){
+  const b = window.EIDOS_TV || {};
+  const bn = document.getElementById("brandName");
+  const bs = document.getElementById("brandSub");
+  if (bn && b.brand) bn.textContent = b.brand;
+  if (bs && b.brandSub) bs.textContent = b.brandSub;
+})();
+paintQr();
+    }
+    render();
+  }, ROTATE_MS);
+  renderPie();
+}
+
+function renderPie() {
+  const el = document.getElementById("pie");
+  el.setAttribute("aria-label", paused ? "Resume rotation" : "Pause rotation");
+  if (paused) {
+    el.innerHTML = `<svg viewBox="0 0 20 20"><circle class="track" cx="10" cy="10" r="8" stroke-width="2.5"/><path d="M8 6.5 L14 10 L8 13.5 Z" fill="${AMBER}"/></svg>`;
+  } else {
+    el.innerHTML = `<svg viewBox="0 0 20 20"><circle class="track" cx="10" cy="10" r="8" stroke-width="2.5"/><circle class="left" cx="10" cy="10" r="5" stroke-width="10" stroke-dasharray="31.416" style="animation-duration:${ROTATE_MS}ms"/></svg>`;
+  }
+}
+
+function renderTabs() {
+  const seg = SEGMENTS[step % SEGMENTS.length];
+  document.getElementById("tabs").innerHTML = SEGMENTS.map((s, idx) =>
+    `<button type="button" class="tvb-tab${s===seg?" active":""}" data-idx="${idx}">${s}</button>`
+  ).join("");
+  document.querySelectorAll(".tvb-tab").forEach(btn => {
+    btn.onclick = () => {
+      const idx = +btn.dataset.idx;
+      const cur = step % SEGMENTS.length;
+      step += (idx - cur + SEGMENTS.length) % SEGMENTS.length;
+      hov = null;
+      setPaused(true);
+      render();
+    };
+  });
+}
+
+function renderCenter() {
+  if (!board) return;
+  const seg = SEGMENTS[step % SEGMENTS.length];
+  const m = board.markets;
+  const el = document.getElementById("center");
+  el.className = "tvb-wipe";
+  el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+  if (seg === "MARKETS") {
+    const pts = m.series || [];
+    el.innerHTML = `<div class="tvb-mk">
+      <div class="tvb-chartwrap">
+        <div class="tvb-charthead"><span class="t">${m.title}</span><span class="s">${m.subtitle}</span></div>
+        <div class="tvb-chart">${progressChart(pts)}</div>
+      </div>
+      <div class="tvb-qcol">${(m.quotes||[]).map((q,i)=>`
+        <div class="tvb-q${i===0?" active":""}">
+          <div class="sym">${q.sym} · ${q.note||q.unit||""}</div>
+          <div class="row"><span class="px">${Number(q.last).toLocaleString()}</span>
+          <span class="chg">${q.pct?q.pct.toFixed(1)+"%":q.unit||""}</span></div>
+        </div>`).join("")}
+      </div></div>`;
+    bindChart(pts);
+  } else if (seg === "DATA INSIGHTS") {
+    const ins = currentInsight();
+    const list = ((board || {}).insights || {}).insights || [];
+    if (!ins) {
+      el.innerHTML = `<div class="tvb-ins"><div class="k">DATA INSIGHTS</div><h2>No insights cleared the interestingness bar</h2>
+        <p class="body">The engine only publishes findings with contrast, anomaly, or concentration — not restated totals.</p></div>`;
+    } else {
+      const n = list.findIndex(x => x.id === ins.id);
+      const pos = (n >= 0 ? n + 1 : insightIdx + 1);
+      el.innerHTML = `<div class="tvb-ins">
+        <div class="row1">
+          <span class="k">DATA INSIGHT</span>
+          <span class="id">${ins.id}</span>
+          <span class="score">SIGNAL ${Number(ins.score).toFixed(2)}</span>
+        </div>
+        <h2>${ins.headline}</h2>
+        <p class="body">${ins.body}</p>
+        <p class="why"><b>Why it matters.</b> ${ins.why_interesting || ""}</p>
+        <div class="nav">${pos} / ${list.length || 1} · SCAN QR FOR THIS INSIGHT · ROTATES</div>
+      </div>`;
+      // QR tracks this insight while segment showing
+      if (!DEEP_INSIGHT) {
+        pinnedInsightId = ins.id;
+        paintQr();
+      }
+    }
+  } else if (seg === "TOP STORIES") {
+    el.innerHTML = `<div class="tvb-stories">${(board.stories||[]).slice(0,4).map((it,i)=>`
+      <a class="tvb-story" href="${it.href||"#"}" target="_blank" rel="noopener">
+        <span class="n">${String(i+1).padStart(2,"0")}</span>
+        <div><span class="tag">${it.tag}</span><p>${it.text}</p></div>
+      </a>`).join("")}</div>`;
+  } else if (seg === "SPECIAL") {
+    const sp = board.special || {};
+    el.innerHTML = `<a class="tvb-sp" href="${sp.href||"#"}" target="_blank" rel="noopener">
+      <span class="k">${sp.kicker||"SPECIAL"}</span>
+      <h2>${sp.headline||""}</h2>
+      ${(sp.bullets||[]).map(b=>`<p class="b">${b}</p>`).join("")}
+    </a>`;
+  } else {
+    // THIS WEEK — daily data-land digests
+    const week = board.week || {};
+    const days = week.days_list || [];
+    if (!days.length) {
+      el.innerHTML = `<div class="tvb-cal"><div class="tvb-cal-row"><span class="d">WEEK</span><span class="t">No digests yet — run data_land_digest.py</span><span class="s">${week.error||""}</span></div></div>`;
+    } else {
+      el.innerHTML = `<div class="tvb-cal">${days.map(d => `
+        <div class="tvb-cal-row" title="${(d.bullets||[]).join(" | ").replace(/"/g,"&quot;")}">
+          <span class="d">${d.weekday} ${d.date.slice(5)}</span>
+          <span class="t">${d.headline}</span>
+          <span class="s">${d.commit_count||0} commits</span>
+        </div>`).join("")}</div>`;
+    }
+  }
+}
+
+function renderChrome() {
+  if (!board) return;
+  const m = board.markets;
+  document.getElementById("strip").innerHTML = (m.quotes||[]).map(q =>
+    `<span>${q.sym} <b>${Number(q.last).toLocaleString()}</b> <span class="sep">//</span> ${q.note||""}</span>`
+  ).join("");
+  const sp = board.special || {};
+  const lower = document.getElementById("lower");
+  lower.href = sp.href || "#";
+  document.getElementById("lowerK").textContent = sp.kicker || "SPECIAL";
+  document.getElementById("lowerH").textContent = sp.headline || "";
+  const items = [...(board.ticker||[]), ...(board.ticker||[])];
+  document.getElementById("tick").innerHTML = items.map(t=>`<span><i>▸</i>${t}</span>`).join("");
+  const sha = board.health && board.health.git_sha_short;
+  const now = new Date().toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+  document.getElementById("live").textContent = `YARD · ${now}${sha?" · "+sha:""}`;
+}
+
+function render() {
+  renderChrome();
+  renderTabs();
+  renderPie();
+  renderCenter();
+}
+
+/** API root: behind Go door prefix /tv is preserved in the browser path. */
+function apiUrl() {
+  return "/api/board";
+}
+function insightsApiUrl() {
+  if (location.pathname.startsWith("/tv/")) return "/tv/api/insights";
+  return "/api/insights";
+}
+
+async function load() {
+  const r = await fetch(apiUrl(), {cache:"no-store"});
+  board = await r.json();
+  // deep link: land on DATA INSIGHTS, pin id, pause rotation
+  if (DEEP_INSIGHT) {
+    const list = ((board || {}).insights || {}).insights || [];
+    const n = list.findIndex(x => x.id === DEEP_INSIGHT);
+    insightIdx = n >= 0 ? n : 0;
+    pinnedInsightId = DEEP_INSIGHT;
+    // step so segment is DATA INSIGHTS (index 1)
+    const targetSeg = 1;
+    step = targetSeg;
+    render();
+    setPaused(true);
+    paintQr();
+    return;
+  }
+  render();
+  setPaused(false);
+}
+
+
+/** Public URL encoded in QR (always the Go door, not localhost). */
+function tvPublicUrl() {
+  if (pinnedInsightId) {
+    const base = (window.EIDOS_TV.publicBase || location.origin).replace(/\/$/, "");
+    return `${base}/${THEME}/i/${pinnedInsightId}`;
+  }
+  const base = (window.EIDOS_TV.publicBase || location.origin).replace(/\/$/, "");
+  return `${base}/${THEME}/`;
+}
+function currentInsight() {
+  const list = ((board || {}).insights || {}).insights || [];
+  if (!list.length) return null;
+  if (pinnedInsightId) {
+    const hit = list.find(x => x.id === pinnedInsightId);
+    if (hit) return hit;
+  }
+  return list[insightIdx % list.length];
+}
+
+function paintQr() {
+  const url = tvPublicUrl();
+  const link = document.getElementById("qrLink");
+  const img = document.getElementById("qrImg");
+  if (!link || !img) return;
+  link.href = url;
+  // Theme-aware QR colors (dark tile vs light tile)
+  const dark = THEME === "dark";
+  // high contrast: black modules on white (best scan reliability on TV)
+  const bg = "ffffff";
+  const fg = "0c1410";
+  img.src =
+    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=8&ecc=M" +
+    "&color=" + fg + "&bgcolor=" + bg +
+    "&data=" + encodeURIComponent(url);
+  img.alt = "QR code: " + url;
+  const cap = document.getElementById("qrCap");
+  if (cap) cap.innerHTML = pinnedInsightId ? "<b>SCAN</b>OPEN INSIGHT" : "<b>SCAN</b>OPEN ON PHONE";
+}
+paintQr();
+
+document.getElementById("pie").onclick = () => setPaused(!paused);
+load();
+setInterval(load, 10*60*1000); // 10-min bronze/quality sample
+setInterval(() => {
+  if (!board) return;
+  const n = new Date().toLocaleString("en-US",{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});
+  const sha = board.health && board.health.git_sha_short;
+  document.getElementById("live").textContent = `YARD · ${n}${sha?" · "+sha:""}`;
+}, 30000);
+</script>
+</body>
+</html>

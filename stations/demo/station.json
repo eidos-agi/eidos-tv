@@ -1,0 +1,7 @@
+{
+  "id": "demo",
+  "brand": "EIDOS",
+  "brandSub": "DEMO STATION \u00b7 TV",
+  "publicBase": "http://127.0.0.1:8799",
+  "livePrefix": "LIVE"
+}

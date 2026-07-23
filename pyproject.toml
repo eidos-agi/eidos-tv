@@ -1,0 +1,30 @@
+[project]
+name = "eidos-tv"
+version = "0.1.0"
+description = "Open-source toolkit for building castable TV stations — segments, themes, QR deep links, insights, and live data adapters."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Eidos AGI" }]
+keywords = ["tv", "dashboard", "operations", "cast", "insights", "eidos"]
+dependencies = []
+
+[project.optional-dependencies]
+postgres = ["psycopg2-binary>=2.9"]
+
+[project.scripts]
+eidos-tv = "eidos_tv.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/eidos-agi/eidos-tv"
+Repository = "https://github.com/eidos-agi/eidos-tv"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["eidos_tv*"]
+
+[tool.setuptools.package-data]
+eidos_tv = ["static/*"]
