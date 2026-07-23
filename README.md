@@ -4,6 +4,21 @@
 
 Born from real station work (segment rotation, light/dark themes, bronze progress columns + quality line, CEO/CFO insights with scannable IDs). Generalized so any team can stand up a station with a small Python provider.
 
+## Channel changer + TV guide
+
+Cable-style overlays shipped in the board chrome:
+
+| Control | Action |
+|---------|--------|
+| **CH+ / CH−** | Next / previous channel |
+| **GUIDE** or **G** | On-screen TV guide |
+| **↑ ↓** in guide | Move selection |
+| **Enter** | Tune |
+| **Esc** | Close guide |
+| **PageUp / PageDown** | Channel up / down |
+
+Channels are declared in root `channels.json` (number, station, callsign, program, preset). Tuning calls `/api/board?ch=<num>` and swaps the live station/preset. A classic **channel banner OSD** appears for a few seconds after each tune.
+
 ## Features
 
 | Feature | What it is |

@@ -460,6 +460,140 @@
     font-size: 1.35vh; color: var(--mute); letter-spacing: 0.1em;
   }
 
+
+  /* Channel banner OSD */
+  .tvb-chbanner {
+    position: fixed; top: 10vh; right: 2vw; z-index: 60;
+    min-width: 22vw; max-width: 36vw;
+    background: rgba(8, 16, 12, 0.92);
+    border: 1px solid var(--line2);
+    border-left: 5px solid var(--green);
+    border-radius: 6px;
+    padding: 1.4vh 1.3vw 1.2vh;
+    box-shadow: var(--shadow);
+    opacity: 0; pointer-events: none;
+    transform: translateY(-8px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  html[data-theme="light"] .tvb-chbanner {
+    background: rgba(255,255,255,0.96);
+  }
+  .tvb-chbanner.on { opacity: 1; transform: translateY(0); }
+  .tvb-chbanner .num {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 4.2vh; line-height: 1;
+    color: var(--green); letter-spacing: 0.04em;
+  }
+  .tvb-chbanner .name {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 2.4vh; margin-top: 0.3vh;
+  }
+  .tvb-chbanner .prog {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.45vh; color: var(--mute); letter-spacing: 0.08em; margin-top: 0.5vh;
+  }
+  .tvb-chbanner .call {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.25vh; color: var(--amber); letter-spacing: 0.12em;
+  }
+
+  /* Remote strip */
+  .tvb-remote {
+    display: flex; align-items: center; gap: 0.35vw;
+    padding: 0 0.7vw;
+    background: var(--head-bg);
+    border-left: 1px solid var(--line);
+  }
+  .tvb-remote button {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.25vh; font-weight: 700; letter-spacing: 0.06em;
+    color: var(--mute);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.55vh 0.55vw;
+    cursor: pointer;
+  }
+  .tvb-remote button:hover { color: var(--text); border-color: var(--green-dim); }
+  .tvb-remote .chnow {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 1.9vh;
+    color: var(--green); min-width: 2.2ch; text-align: center;
+  }
+
+  /* TV Guide overlay */
+  .tvb-guide {
+    position: fixed; inset: 0; z-index: 70;
+    background: rgba(4, 10, 8, 0.72);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0 2vw 8vh;
+  }
+  .tvb-guide.on { display: flex; }
+  .tvb-guide-panel {
+    width: min(920px, 92vw);
+    max-height: 72vh;
+    overflow: auto;
+    background: var(--panel);
+    border: 1px solid var(--line2);
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  .tvb-guide-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1vw;
+    padding: 1.4vh 1.4vw;
+    border-bottom: 1px solid var(--line);
+    background: var(--panel2);
+    position: sticky; top: 0;
+  }
+  .tvb-guide-head h2 {
+    margin: 0;
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 2.8vh; letter-spacing: 0.06em;
+  }
+  .tvb-guide-head .hint {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2vh; color: var(--mute); letter-spacing: 0.08em;
+  }
+  .tvb-guide-head button {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.2vh; font-weight: 700;
+    border: 1px solid var(--line); background: var(--panel);
+    color: var(--mute); border-radius: 3px; padding: 0.5vh 0.7vw; cursor: pointer;
+  }
+  .tvb-guide-row {
+    display: grid;
+    grid-template-columns: 4.5rem 7rem 1fr;
+    gap: 0.8vw;
+    align-items: center;
+    padding: 1.15vh 1.4vw;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .tvb-guide-row:hover, .tvb-guide-row.focus {
+    background: color-mix(in srgb, var(--green) 12%, var(--panel2));
+  }
+  .tvb-guide-row.on-air {
+    box-shadow: inset 3px 0 0 0 var(--green);
+  }
+  .tvb-guide-row .n {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 800; font-size: 2.4vh; color: var(--green);
+  }
+  .tvb-guide-row .call {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.3vh; letter-spacing: 0.1em; color: var(--amber);
+  }
+  .tvb-guide-row .meta .title {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 700; font-size: 2vh;
+  }
+  .tvb-guide-row .meta .desc {
+    font-size: 1.45vh; color: var(--mute); margin-top: 0.25vh;
+  }
+
   /* QR — always-on corner for cast / walk-up scan */
   .tvb-qr {
     position: fixed;
@@ -510,6 +644,12 @@
     </div>
     <nav class="tvb-tabs" id="tabs" aria-label="Segments"></nav>
     <button type="button" class="tvb-pie" id="pie" aria-label="Pause rotation"></button>
+    <div class="tvb-remote" aria-label="Channel changer">
+      <button type="button" id="btnChDown" title="Channel down">CH−</button>
+      <span class="chnow" id="chNow">2</span>
+      <button type="button" id="btnChUp" title="Channel up">CH+</button>
+      <button type="button" id="btnGuide" title="TV Guide (G)">GUIDE</button>
+    </div>
     <nav class="theme-switch" aria-label="Theme">
       <a id="linkDark" href="../dark/">DARK</a>
       <a id="linkLight" href="../light/">LIGHT</a>
@@ -519,6 +659,22 @@
   <main class="tvb-center"><div class="tvb-wipe" id="center"></div></main>
   <a class="tvb-lower" id="lower" href="#"><span class="k" id="lowerK">SPECIAL</span><span class="h" id="lowerH"></span></a>
   <div class="tvb-tick" aria-hidden="true"><div class="tvb-tick-inner" id="tick"></div></div>
+  <div class="tvb-chbanner" id="chBanner" aria-live="polite">
+    <div class="call" id="chBannerCall">EID-2</div>
+    <div class="num" id="chBannerNum">2</div>
+    <div class="name" id="chBannerName">EIDOS DEMO</div>
+    <div class="prog" id="chBannerProg">Progress &amp; Quality</div>
+  </div>
+  <div class="tvb-guide" id="tvGuide" aria-hidden="true">
+    <div class="tvb-guide-panel" role="dialog" aria-label="TV Guide">
+      <div class="tvb-guide-head">
+        <h2 id="guideTitle">TV GUIDE</h2>
+        <span class="hint">↑↓ SELECT · ENTER TUNE · ESC CLOSE · G TOGGLE</span>
+        <button type="button" id="btnGuideClose">CLOSE</button>
+      </div>
+      <div id="guideRows"></div>
+    </div>
+  </div>
   <div class="tvb-qr" id="qrBox">
     <a id="qrLink" href="#" target="_blank" rel="noopener" title="Open Greenmark TV on your phone">
       <img id="qrImg" alt="QR code to open Greenmark TV" width="180" height="180" />
@@ -555,6 +711,137 @@ document.documentElement.setAttribute("data-theme", THEME);
 document.title = "Greenmark TV · " + THEME.toUpperCase() + (DEEP_INSIGHT ? " · " + DEEP_INSIGHT : "");
 let insightIdx = 0;
 let pinnedInsightId = DEEP_INSIGHT;
+
+/* ---- Channel changer + TV guide ---- */
+let channelsCat = { channels: [] };
+let channelIndex = 0;
+let guideOpen = false;
+let guideFocus = 0;
+let bannerTimer = null;
+
+function channelList() {
+  return (channelsCat && channelsCat.channels) || (board && board.channels && board.channels.channels) || [];
+}
+
+function currentChannel() {
+  const list = channelList();
+  if (!list.length) return { num: 2, name: "EIDOS", callsign: "EID-2", program: "Live", station: "demo", preset: "full" };
+  return list[Math.max(0, Math.min(channelIndex, list.length - 1))];
+}
+
+function showChannelBanner() {
+  const ch = currentChannel();
+  const el = document.getElementById("chBanner");
+  if (!el) return;
+  document.getElementById("chBannerNum").textContent = String(ch.num ?? "");
+  document.getElementById("chBannerName").textContent = ch.name || "";
+  document.getElementById("chBannerProg").textContent = ch.program || ch.desc || "";
+  document.getElementById("chBannerCall").textContent = ch.callsign || "";
+  const now = document.getElementById("chNow");
+  if (now) now.textContent = String(ch.num ?? "");
+  el.classList.add("on");
+  if (bannerTimer) clearTimeout(bannerTimer);
+  bannerTimer = setTimeout(() => el.classList.remove("on"), 3200);
+}
+
+function renderGuide() {
+  const list = channelList();
+  const host = document.getElementById("guideRows");
+  const title = document.getElementById("guideTitle");
+  if (title) title.textContent = (channelsCat && channelsCat.guide_title) || "TV GUIDE";
+  if (!host) return;
+  const cur = currentChannel();
+  host.innerHTML = list.map((ch, i) => {
+    const on = (ch.num === cur.num && ch.station === cur.station) ? " on-air" : "";
+    const focus = i === guideFocus ? " focus" : "";
+    return `<div class="tvb-guide-row${on}${focus}" data-idx="${i}">
+      <div class="n">${ch.num}</div>
+      <div class="call">${ch.callsign || ch.station || ""}</div>
+      <div class="meta">
+        <div class="title">${ch.name || ""} — ${ch.program || ""}</div>
+        <div class="desc">${ch.desc || ""}</div>
+      </div>
+    </div>`;
+  }).join("");
+  host.querySelectorAll(".tvb-guide-row").forEach(row => {
+    row.onclick = () => {
+      guideFocus = +row.dataset.idx;
+      tuneToIndex(guideFocus);
+      setGuide(false);
+    };
+  });
+}
+
+function setGuide(on) {
+  guideOpen = !!on;
+  const g = document.getElementById("tvGuide");
+  if (!g) return;
+  g.classList.toggle("on", guideOpen);
+  g.setAttribute("aria-hidden", guideOpen ? "false" : "true");
+  if (guideOpen) {
+    guideFocus = channelIndex;
+    renderGuide();
+    setPaused(true);
+  }
+}
+
+async function tuneToIndex(idx) {
+  const list = channelList();
+  if (!list.length) return;
+  channelIndex = (idx + list.length) % list.length;
+  const ch = currentChannel();
+  showChannelBanner();
+  // reload board for channel
+  try {
+    const q = new URLSearchParams({ ch: String(ch.num), station: ch.station || "" });
+    const r = await fetch("/api/board?" + q.toString(), { cache: "no-store" });
+    board = await r.json();
+    if (board.channels) channelsCat = board.channels;
+    // preset segment
+    const pref = board.preferred_segment;
+    if (pref) {
+      const si = SEGMENTS.indexOf(pref);
+      if (si >= 0) step = si;
+    }
+    render();
+    paintQr();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function channelUp() { tuneToIndex(channelIndex + 1); }
+function channelDown() { tuneToIndex(channelIndex - 1); }
+
+function wireRemote() {
+  const up = document.getElementById("btnChUp");
+  const down = document.getElementById("btnChDown");
+  const guide = document.getElementById("btnGuide");
+  const close = document.getElementById("btnGuideClose");
+  if (up) up.onclick = () => channelUp();
+  if (down) down.onclick = () => channelDown();
+  if (guide) guide.onclick = () => setGuide(!guideOpen);
+  if (close) close.onclick = () => setGuide(false);
+  const g = document.getElementById("tvGuide");
+  if (g) g.addEventListener("click", (e) => { if (e.target === g) setGuide(false); });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
+    const k = e.key;
+    if (k === "g" || k === "G") { e.preventDefault(); setGuide(!guideOpen); return; }
+    if (k === "Escape") { if (guideOpen) { e.preventDefault(); setGuide(false); } return; }
+    if (guideOpen) {
+      if (k === "ArrowDown") { e.preventDefault(); guideFocus = Math.min(channelList().length - 1, guideFocus + 1); renderGuide(); return; }
+      if (k === "ArrowUp") { e.preventDefault(); guideFocus = Math.max(0, guideFocus - 1); renderGuide(); return; }
+      if (k === "Enter") { e.preventDefault(); tuneToIndex(guideFocus); setGuide(false); return; }
+      return;
+    }
+    if (k === "ArrowUp" || k === "PageUp" || k === "+") { e.preventDefault(); channelUp(); return; }
+    if (k === "ArrowDown" || k === "PageDown" || k === "-") { e.preventDefault(); channelDown(); return; }
+    // digit entry could be added later
+  });
+}
+
 
 // Theme switch links work both direct (:8799/dark/) and behind door (/tv/dark/)
 (function themeLinks() {
@@ -827,6 +1114,9 @@ function renderCenter() {
 
 function renderChrome() {
   if (!board) return;
+  if (board.channels) channelsCat = board.channels;
+  const chn = document.getElementById("chNow");
+  if (chn && board.channel) chn.textContent = String(board.channel.num || "");
   const m = board.markets;
   document.getElementById("strip").innerHTML = (m.quotes||[]).map(q =>
     `<span>${q.sym} <b>${Number(q.last).toLocaleString()}</b> <span class="sep">//</span> ${q.note||""}</span>`

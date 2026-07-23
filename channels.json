@@ -1,0 +1,32 @@
+{
+  "guide_title": "EIDOS TV GUIDE",
+  "channels": [
+    {
+      "num": 2,
+      "station": "demo",
+      "name": "EIDOS DEMO",
+      "callsign": "EID-2",
+      "program": "Progress & Quality",
+      "desc": "Rising progress columns with quality line. Wall-cast default.",
+      "preset": "full"
+    },
+    {
+      "num": 4,
+      "station": "demo",
+      "name": "EIDOS INSIGHTS",
+      "callsign": "EID-4",
+      "program": "Data Insights",
+      "desc": "Insight-forward board \u2014 starts on DATA INSIGHTS segment.",
+      "preset": "insights"
+    },
+    {
+      "num": 7,
+      "station": "demo",
+      "name": "EIDOS WEEK",
+      "callsign": "EID-7",
+      "program": "This Week",
+      "desc": "Week rollup of daily digests.",
+      "preset": "week"
+    }
+  ]
+}

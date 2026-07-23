@@ -28,6 +28,91 @@ ROOT = Path(os.environ.get("EIDOS_TV_ROOT", Path.cwd()))
 STATION_ID = os.environ.get("EIDOS_TV_STATION", "demo")
 CACHE_TTL = int(os.environ.get("TV_CACHE_TTL", "60"))
 
+def load_channels() -> dict:
+    for p in (ROOT / "channels.json", PKG.parent / "channels.json"):
+        if p.is_file():
+            try:
+                return json.loads(p.read_text())
+            except Exception:
+                pass
+    # fallback: one channel per station folder
+    stations_root = ROOT / "stations"
+    if not stations_root.is_dir():
+        stations_root = PKG.parent / "stations"
+    chans = []
+    n = 2
+    if stations_root.is_dir():
+        for d in sorted(stations_root.iterdir()):
+            if not d.is_dir() or d.name.startswith("."):
+                continue
+            cfg = {}
+            sj = d / "station.json"
+            if sj.is_file():
+                try:
+                    cfg = json.loads(sj.read_text())
+                except Exception:
+                    pass
+            chans.append({
+                "num": n,
+                "station": d.name,
+                "name": cfg.get("brand") or d.name.upper(),
+                "callsign": (cfg.get("brand") or d.name)[:6].upper(),
+                "program": cfg.get("brandSub") or "Live board",
+                "desc": cfg.get("description") or f"Station {d.name}",
+                "preset": "full",
+            })
+            n += 2
+    if not chans:
+        chans = [{"num": 2, "station": STATION_ID, "name": "EIDOS", "callsign": "EID-2",
+                  "program": "Live", "desc": "Default station", "preset": "full"}]
+    return {"guide_title": "TV GUIDE", "channels": chans}
+
+
+def resolve_channel(ch: str | int | None = None, station: str | None = None) -> dict:
+    cat = load_channels()
+    chans = cat.get("channels") or []
+    if ch is not None and str(ch).strip() != "":
+        try:
+            num = int(ch)
+            for c in chans:
+                if int(c.get("num", -1)) == num:
+                    return c
+        except ValueError:
+            pass
+        for c in chans:
+            if str(c.get("station")) == str(ch) or str(c.get("callsign")) == str(ch):
+                return c
+    if station:
+        for c in chans:
+            if c.get("station") == station:
+                return c
+    return chans[0] if chans else {"num": 2, "station": STATION_ID, "name": "EIDOS", "preset": "full"}
+
+
+def station_dir_for(station_id: str) -> Path:
+    candidates = [
+        ROOT / "stations" / station_id,
+        PKG.parent / "stations" / station_id,
+    ]
+    for c in candidates:
+        if c.is_dir():
+            return c
+    return candidates[0]
+
+
+def load_provider_for(station_id: str):
+    path = station_dir_for(station_id) / "provider.py"
+    if not path.is_file():
+        raise FileNotFoundError(f"No provider.py for station {station_id}")
+    spec = importlib.util.spec_from_file_location(f"station_{station_id}", path)
+    mod = importlib.util.module_from_spec(spec)
+    assert spec.loader
+    spec.loader.exec_module(mod)
+    if not hasattr(mod, "fetch_board"):
+        raise RuntimeError(f"{station_id} provider must define fetch_board()")
+    return mod
+
+
 _cache: dict = {"t": 0.0, "payload": None}
 
 
@@ -68,30 +153,63 @@ def load_provider():
     return mod
 
 
-def board_payload() -> dict:
+def board_payload(channel: dict | None = None) -> dict:
+    ch = channel or resolve_channel(station=STATION_ID)
+    station_id = ch.get("station") or STATION_ID
+    preset = ch.get("preset") or "full"
+    cache_key = f"{station_id}:{preset}:{ch.get('num')}"
     now = time.time()
-    if _cache["payload"] is not None and (now - _cache["t"]) < CACHE_TTL:
+    if (
+        _cache.get("payload") is not None
+        and _cache.get("key") == cache_key
+        and (now - _cache["t"]) < CACHE_TTL
+    ):
         return _cache["payload"]
-    cfg = load_station_config()
-    mod = load_provider()
-    body = mod.fetch_board()
+
+    # station env for provider
+    prev_station = os.environ.get("EIDOS_TV_STATION")
+    prev_preset = os.environ.get("EIDOS_TV_PRESET")
+    os.environ["EIDOS_TV_STATION"] = station_id
+    os.environ["EIDOS_TV_PRESET"] = str(preset)
+    try:
+        sdir = station_dir_for(station_id)
+        cfg_path = sdir / "station.json"
+        cfg = json.loads(cfg_path.read_text()) if cfg_path.is_file() else {
+            "id": station_id, "brand": ch.get("name", "EIDOS"),
+            "brandSub": ch.get("program", "STATION · TV"),
+            "publicBase": f"http://{HOST}:{PORT}",
+        }
+        mod = load_provider_for(station_id)
+        body = mod.fetch_board()
+    finally:
+        if prev_station is None:
+            os.environ.pop("EIDOS_TV_STATION", None)
+        else:
+            os.environ["EIDOS_TV_STATION"] = prev_station
+        if prev_preset is None:
+            os.environ.pop("EIDOS_TV_PRESET", None)
+        else:
+            os.environ["EIDOS_TV_PRESET"] = prev_preset
+
     body.setdefault("bug", cfg.get("brand", "EIDOS TV"))
     body.setdefault("generated_at", time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()))
     body["station"] = cfg
+    body["channel"] = ch
+    body["channels"] = load_channels()
     # optional insights file
-    ins = station_dir() / "data" / "insights.json"
+    ins = station_dir_for(station_id) / "data" / "insights.json"
     if ins.is_file() and "insights" not in body:
         try:
             body["insights"] = json.loads(ins.read_text())
         except Exception:
             pass
-    week = station_dir() / "data" / "week.json"
+    week = station_dir_for(station_id) / "data" / "week.json"
     if week.is_file() and "week" not in body:
         try:
             body["week"] = json.loads(week.read_text())
         except Exception:
             pass
-    _cache.update(t=now, payload=body)
+    _cache.update(t=now, payload=body, key=cache_key)
     return body
 
 
@@ -166,9 +284,24 @@ class Handler(SimpleHTTPRequestHandler):
         raw = self.path.split("?", 1)[0]
         path = raw.rstrip("/") or "/"
 
+        if path in ("/api/channels", "/api/channels.json"):
+            rawb = json.dumps(load_channels(), default=str).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(rawb)))
+            self.end_headers()
+            self.wfile.write(rawb)
+            return
+
         if path in ("/api/board", "/api/board.json"):
             try:
-                body = board_payload()
+                from urllib.parse import urlparse, parse_qs
+                qs = parse_qs(urlparse(self.path).query)
+                ch = (qs.get("ch") or qs.get("channel") or [None])[0]
+                st = (qs.get("station") or [None])[0]
+                channel = resolve_channel(ch=ch, station=st)
+                body = board_payload(channel)
             except Exception as e:
                 traceback.print_exc()
                 body = {"live": False, "error": f"{type(e).__name__}: {e}", "markets": {"series": [], "quotes": []}}

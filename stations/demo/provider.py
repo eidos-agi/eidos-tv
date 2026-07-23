@@ -6,6 +6,9 @@ from datetime import datetime, timezone
 
 
 def fetch_board() -> dict:
+    import os
+    preset = os.environ.get("EIDOS_TV_PRESET", "full")
+
     now = int(time.time())
     # rising bronze bars + quality line
     series = []
@@ -114,4 +117,10 @@ def fetch_board() -> dict:
             "github.com/eidos-agi/eidos-tv",
         ],
         "health": {"git_sha_short": "demo", "status": "ok"},
+        "preset": preset,
+        "preferred_segment": {
+            "full": None,
+            "insights": "DATA INSIGHTS",
+            "week": "THIS WEEK",
+        }.get(preset),
     }

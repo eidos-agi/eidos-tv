@@ -23,3 +23,8 @@ stations/<id>/provider.fetch_board()
 ## Relationship to Northstar / Greenmark boards
 
 The interaction model (segments, pie pause, scrub, lower-third, crawl) was proven on live boards, then extracted here so the next station is a provider — not a rewrite.
+
+
+## Channel changer
+
+`channels.json` at the project root lists channels. Each entry maps a **channel number** to a **station** provider and optional **preset** (e.g. start on insights). The board treats this like a real TV: guide overlay, CH+/CH−, and a short-lived channel banner. The server resolves `?ch=` / `?station=` on `/api/board` without restarting the process.
