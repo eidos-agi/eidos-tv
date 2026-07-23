@@ -69,8 +69,9 @@ def load_channels() -> dict:
 
 
 def resolve_channel(ch: str | int | None = None, station: str | None = None) -> dict:
+    """Resolve by explicit ``num`` field (Daniel-reassignable config), never list position."""
     cat = load_channels()
-    chans = cat.get("channels") or []
+    chans = sorted(cat.get("channels") or [], key=lambda c: int(c.get("num") or 0))
     if ch is not None and str(ch).strip() != "":
         try:
             num = int(ch)
@@ -84,9 +85,19 @@ def resolve_channel(ch: str | int | None = None, station: str | None = None) -> 
                 return c
     if station:
         for c in chans:
+            if c.get("station") == station and (c.get("kind") or "station") != "guide":
+                return c
+        for c in chans:
             if c.get("station") == station:
                 return c
-    return chans[0] if chans else {"num": 2, "station": STATION_ID, "name": "EIDOS", "preset": "full"}
+    # Prefer configured content station (not guide) matching STATION_ID, else first non-guide
+    for c in chans:
+        if c.get("station") == STATION_ID and (c.get("kind") or "station") != "guide":
+            return c
+    for c in chans:
+        if (c.get("kind") or "station") != "guide":
+            return c
+    return chans[0] if chans else {"num": 2, "station": STATION_ID, "name": "EIDOS", "preset": "full", "kind": "station"}
 
 
 def station_dir_for(station_id: str) -> Path:
@@ -155,6 +166,37 @@ def load_provider():
 
 def board_payload(channel: dict | None = None) -> dict:
     ch = channel or resolve_channel(station=STATION_ID)
+    # Guide is config chrome (CH 01 doctrine) — not a station provider
+    kind = (ch.get("kind") or "station").lower()
+    if kind == "guide" or (ch.get("station") or "").lower() == "guide":
+        return {
+            "live": True,
+            "source": "guide",
+            "bug": "GUIDE",
+            "live_label": "GUIDE",
+            "kind": "guide",
+            "channel": ch,
+            "channels": load_channels(),
+            "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "markets": {"title": "TV GUIDE", "subtitle": "SELECT A CHANNEL", "chart": "bronze_bars_quality_line", "series": [], "quotes": []},
+            "stories": [],
+            "special": {
+                "kicker": "GUIDE",
+                "headline": ch.get("program") or "TV Guide",
+                "bullets": [c.get("desc") or c.get("name") for c in (load_channels().get("channels") or [])[:8]],
+                "href": "/",
+            },
+            "insights": {"insights": [], "count": 0},
+            "week": {"days_list": []},
+            "ticker": ["TV GUIDE", "CH NUMBERS ARE CONFIG (num FIELD)", "TUNE WITH CH+/CH− OR GUIDE"],
+            "station": {
+                "id": "guide",
+                "brand": "GUIDE",
+                "brandSub": "CH 01 · CHANNEL CHANGER",
+                "publicBase": f"http://{HOST}:{PORT}",
+            },
+        }
+
     station_id = ch.get("station") or STATION_ID
     preset = ch.get("preset") or "full"
     cache_key = f"{station_id}:{preset}:{ch.get('num')}"

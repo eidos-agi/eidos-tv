@@ -1,0 +1,8 @@
+{
+  "id": "tallytv",
+  "brand": "TallyTV",
+  "brandSub": "CH 02 · REEVES FINANCIAL CHANNEL",
+  "publicBase": "http://100.83.12.9:4920",
+  "livePrefix": "LIVE",
+  "channelNum": 2
+}
